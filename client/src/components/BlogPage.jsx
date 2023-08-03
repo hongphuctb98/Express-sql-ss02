@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import NavCom from "./NavCom";
 
 function BlogPage() {
   const [blogs, setBlogs] = useState([]);
@@ -73,7 +74,7 @@ function BlogPage() {
   const { user_id, title, body } = blog;
   return (
     <>
-      {" "}
+      <NavCom />{" "}
       <>
         <button
           type="button"

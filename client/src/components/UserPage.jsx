@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import Table from "react-bootstrap/Table";
 import axios from "axios";
+import NavCom from "./NavCom";
+import debounce from "lodash.debounce";
 
 function UserPage() {
   const [users, setUsers] = useState([]);
   const [editUserId, setEditUserId] = useState("");
+  const [page, setPage] = useState(1);
+  const [nameSearch, setNameSearch] = useState("");
   const [user, setUser] = useState({
     name: "",
     username: "",
@@ -13,17 +16,25 @@ function UserPage() {
     website: "",
   });
   const [editAct, setEditAct] = useState(false);
-
-  useEffect(() => {
+  const loadData = () => {
     axios
-      .get("http://localhost:4444/api/v1/users")
+      .get(
+        `http://localhost:4444/api/v1/users/?keysearch=${nameSearch}&page=${page}`
+      )
       .then((res) => {
         setUsers(res.data.users);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  };
+
+  useEffect(() => {
+    // const delaySearch = debounce(loadData, 500);
+    // delaySearch();
+    // return delaySearch.cancel();
+    loadData();
+  }, [nameSearch]);
 
   const handleDel = (id) => {
     axios
@@ -78,19 +89,88 @@ function UserPage() {
     setEditUserId("");
     setEditAct(false);
   };
+
+  // Pagiantion
+  const handlePrePage = () => {
+    if (page - 1 > 0) {
+      axios
+        .get(`http://localhost:4444/api/v1/users/?page=${page - 1}`)
+        .then((res) => {
+          setUsers(res.data.users);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      setPage(page - 1);
+    }
+  };
+  const handleNextPage = async () => {
+    if (page <= users.length / 5) {
+      await axios
+        .get(`http://localhost:4444/api/v1/users/?page=${page + 1}`)
+        .then((res) => {
+          setUsers(res.data.users);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      setPage(page + 1);
+    }
+  };
+
   const { name, username, email, phone, website } = user;
   return (
     <>
+      <NavCom />
       {/* Button trigger modal */}
-      <button
-        type="button"
-        className="btn btn-primary mt-3"
-        data-bs-toggle="modal"
-        data-bs-target="#staticBackdrop"
-        onClick={() => setEditAct(false)}
+      <div className="d-flex justify-content-between mt-4">
+        <button
+          type="button"
+          className="btn btn-primary mt-3"
+          data-bs-toggle="modal"
+          data-bs-target="#staticBackdrop"
+          onClick={() => setEditAct(false)}
+        >
+          Create user
+        </button>
+        <input
+          placeholder="Tìm kiêm "
+          type="search"
+          className="form-control"
+          value={nameSearch}
+          onChange={(e) => setNameSearch(e.target.value)}
+          style={{ width: "300px" }}
+        />
+      </div>
+      <nav
+        aria-label="Page navigation example"
+        className="d-flex justify-content-center"
       >
-        Create user
-      </button>
+        <ul className="pagination">
+          <li className="page-item">
+            <a
+              className="page-link"
+              aria-label="Previous"
+              onClick={() => handlePrePage()}
+            >
+              <span aria-hidden="true">«</span>
+            </a>
+          </li>
+          <li className="page-item">
+            <a className="page-link">{page} </a>
+          </li>
+
+          <li className="page-item">
+            <a
+              className="page-link"
+              aria-label="Next"
+              onClick={() => handleNextPage()}
+            >
+              <span aria-hidden="true">»</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
       <table className="table mt-4  table-striped">
         <thead>
           <tr>
@@ -103,7 +183,7 @@ function UserPage() {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {users?.map((user) => (
             <tr key={user.user_id}>
               <th scope="row">{user.user_id}</th>
               <td>{user.name}</td>
@@ -261,38 +341,6 @@ function UserPage() {
           </div>
         </div>
       </>
-      <nav
-        aria-label="Page navigation example"
-        className="d-flex justify-content-center"
-      >
-        <ul className="pagination">
-          <li className="page-item">
-            <a className="page-link" href="#" aria-label="Previous">
-              <span aria-hidden="true">«</span>
-            </a>
-          </li>
-          <li className="page-item">
-            <a className="page-link" href="#">
-              1
-            </a>
-          </li>
-          <li className="page-item">
-            <a className="page-link" href="#">
-              2
-            </a>
-          </li>
-          <li className="page-item">
-            <a className="page-link" href="#">
-              3
-            </a>
-          </li>
-          <li className="page-item">
-            <a className="page-link" href="#" aria-label="Next">
-              <span aria-hidden="true">»</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
     </>
   );
 }

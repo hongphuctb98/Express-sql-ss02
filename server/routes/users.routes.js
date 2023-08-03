@@ -3,8 +3,21 @@ const router = express.Router();
 const db = require("../ultils/database");
 
 router.get("/", async (req, res) => {
+  const { keysearch } = req.query;
+  const { page } = req.query || 1;
+
+  //pagination
+  console.log("keysearch--", keysearch);
+  console.log("page---", page);
   try {
-    let data = await db.execute("SELECT * FROM user");
+    let query = "SELECT * FROM user";
+    if (keysearch) {
+      query += ` WHERE username LIKE "%${keysearch}%"`;
+    }
+    if (page) {
+      query += ` LIMIT 5 OFFSET ${(page - 1) * 5}`;
+    }
+    let data = await db.execute(query);
     res.json({ users: data[0] });
   } catch (error) {
     res.json({ message: "get all users" });
@@ -62,12 +75,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/:pagesize/:page", async (req, res) => {
-  const { pageszie, page } = req.params;
-  try {
-  } catch (error) {
-    console.log({ message: error });
-  }
-});
+//search
 
 module.exports = router;
