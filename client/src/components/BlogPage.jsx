@@ -5,17 +5,21 @@ import NavCom from "./NavCom";
 function BlogPage() {
   const [blogs, setBlogs] = useState([]);
   const [editUserId, setEditUserId] = useState("");
+  const [page, setPage] = useState(1);
   const [blog, setBlog] = useState({
     user_id: "",
     title: "",
     body: "",
   });
   const [editAct, setEditAct] = useState(false);
-  useEffect(() => {
+  const uploadData = () => {
     axios
-      .get("http://localhost:4444/api/v1/blogs")
+      .get(`http://localhost:4444/api/v1/blogs?page=${page}`)
       .then((res) => setBlogs(res.data.blogs))
       .catch((err) => console.log(err));
+  };
+  useEffect(() => {
+    uploadData();
   }, []);
   const handleDel = (id) => {
     axios
@@ -71,10 +75,34 @@ function BlogPage() {
     setEditAct(false);
     setBlog({ user_id: "", title: "", body: "" });
   };
+  //pagiantion
+  const handlePrePage = () => {
+    axios
+      .get(`http://localhost:4444/api/v1/blogs/?page=${page - 1}`)
+      .then((res) => {
+        setBlogs(res.data.blogs);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setPage((pre) => pre - 1);
+  };
+  const handleNextPage = async () => {
+    console.log(page);
+    await axios
+      .get(`http://localhost:4444/api/v1/blogs/?page=${page + 1}`)
+      .then((res) => {
+        setBlogs(res.data.blogs);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setPage((pre) => pre + 1);
+  };
   const { user_id, title, body } = blog;
   return (
     <>
-      <NavCom />{" "}
+      <NavCom />
       <>
         <button
           type="button"
@@ -85,6 +113,31 @@ function BlogPage() {
         >
           Create blog
         </button>
+
+        <ul className="pagination">
+          <li className="page-item">
+            <a
+              className="page-link"
+              aria-label="Previous"
+              onClick={() => handlePrePage()}
+            >
+              <span aria-hidden="true">«</span>
+            </a>
+          </li>
+          <li className="page-item">
+            <a className="page-link">{page} </a>
+          </li>
+
+          <li className="page-item">
+            <a
+              className="page-link"
+              aria-label="Next"
+              onClick={() => handleNextPage()}
+            >
+              <span aria-hidden="true">»</span>
+            </a>
+          </li>
+        </ul>
         <table className="table mt-4  table-striped">
           <thead>
             <tr>
@@ -226,35 +279,7 @@ function BlogPage() {
       <nav
         aria-label="Page navigation example"
         className="d-flex justify-content-center"
-      >
-        <ul className="pagination">
-          <li className="page-item">
-            <a className="page-link" href="#" aria-label="Previous">
-              <span aria-hidden="true">«</span>
-            </a>
-          </li>
-          <li className="page-item">
-            <a className="page-link" href="#">
-              1
-            </a>
-          </li>
-          <li className="page-item">
-            <a className="page-link" href="#">
-              2
-            </a>
-          </li>
-          <li className="page-item">
-            <a className="page-link" href="#">
-              3
-            </a>
-          </li>
-          <li className="page-item">
-            <a className="page-link" href="#" aria-label="Next">
-              <span aria-hidden="true">»</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
+      ></nav>
     </>
   );
 }

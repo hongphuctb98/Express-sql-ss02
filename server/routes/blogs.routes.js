@@ -3,8 +3,18 @@ const router = express.Router();
 const db = require("../ultils/database");
 
 router.get("/", async (req, res) => {
+  const { search } = req.query;
+  const { page } = req.query || 1;
+  console.log("page--", page);
   try {
-    const data = await db.execute("select * from blog");
+    let query = "SELECT * FROM blog";
+    if (search) {
+      query += ` WHERE title LIKE "%${search}%"`;
+    }
+    if (page) {
+      query += ` LIMIT 10 OFFSET ${(page - 1) * 10}`;
+    }
+    const data = await db.execute(query);
     res.json({ blogs: data[0] });
   } catch (error) {
     res.json({ message: "get all blogs fail" });

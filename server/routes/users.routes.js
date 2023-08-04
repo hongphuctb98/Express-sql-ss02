@@ -6,9 +6,6 @@ router.get("/", async (req, res) => {
   const { keysearch } = req.query;
   const { page } = req.query || 1;
 
-  //pagination
-  console.log("keysearch--", keysearch);
-  console.log("page---", page);
   try {
     let query = "SELECT * FROM user";
     if (keysearch) {
